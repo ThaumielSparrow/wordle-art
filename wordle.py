@@ -2,7 +2,7 @@ import requests
 import datetime
 import json
 import os
-
+from typing import List
 
 CACHE_FILE = "answer_cache.json"
 WORD_LIST = "guesses.txt"
@@ -30,6 +30,17 @@ def write_cache(data):
             json.dump(data, f, indent=4)
     except IOError as e:
         print(f"Error writing to cache: {e}")
+
+
+def load_word_list():
+    """Loads the five-letter word list from the text file."""
+    try:
+        with open(WORD_LIST, "r") as f:
+            words = [line.strip().upper() for line in f]
+        return [word for word in words if len(word) == 5]
+    except FileNotFoundError:
+        print(f"Error: '{WORD_LIST}' not found.")
+        return []
 
 
 def get_todays_answer() -> str:
@@ -91,7 +102,7 @@ def get_pattern(guess, answer):
     return pattern
 
 
-def find_art_guesses(grid, answer, word_list):
+def find_art_guesses(grid, answer, word_list) -> List[str]:
     guesses = []
     for row_pattern in grid:
         found_word = False
@@ -106,14 +117,8 @@ def find_art_guesses(grid, answer, word_list):
 
 
 def main():
-    """
-    Main function to run the Wordle art generator.
-    """
-
     wordle_answer:str = get_todays_answer()
     
-    # -----------------------------------------------------------
-
     try:
         with open("guesses.txt", "r") as f:
             word_list = [line.strip().upper() for line in f]
