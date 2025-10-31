@@ -40,6 +40,7 @@ class WordleGUI(tk.Tk):
         tk.Label(input_frame, text="Select Date:").pack(side=tk.LEFT, padx=(0,5))
         self.date_picker = DateEntry(input_frame, date_pattern="y-mm-dd", width=12, showweeknumbers=False, showothermonthdays=False)
         self.date_picker.pack(side=tk.LEFT, padx=5)
+        self.date_picker.bind("<Button-1>", self.handle_calendar_focus, add="+")
         fetch_btn = tk.Button(input_frame, text="Fetch", command=self.fetch_word_for_date)
         fetch_btn.pack(side=tk.LEFT, padx=5)
 
@@ -75,6 +76,10 @@ class WordleGUI(tk.Tk):
 
         self.result_text = tk.Text(result_frame, height=6, width=40, state="disabled", font=("Courier", 12))
         self.result_text.pack()
+
+
+    def handle_calendar_focus(self, _event):
+        self.focus_set()
 
     
     def toggle_square(self, row:int, col:int):
