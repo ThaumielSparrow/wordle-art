@@ -1,5 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox, font
+from tkcalendar import DateEntry
+import random
+
 import wordle
 
 from typing import List
@@ -8,6 +11,9 @@ class WordleGUI(tk.Tk):
     COLORS = ["#787c7e", "#3cB043", "#ffff00"]
     
     def __init__(self, word=""):
+        """
+        Initialize the Wordle GUI class
+        """
         super().__init__()
         self.title("Wordle Art Generator")
         self.resizable(False, False)
@@ -31,8 +37,14 @@ class WordleGUI(tk.Tk):
         input_frame = tk.Frame(main_frame)
         input_frame.pack(pady=10)
 
+        tk.Label(input_frame, text="Select Date:").pack(side=tk.LEFT, padx=(0,5))
+        self.date_picker = DateEntry(input_frame, date_pattern="y-mm-dd", width=12, showweeknumbers=False, showothermonthdays=False)
+        self.date_picker.pack(side=tk.LEFT, padx=5)
+        fetch_btn = tk.Button(input_frame, text="Fetch", command=self.fetch_word_for_date)
+        fetch_btn.pack(side=tk.LEFT, padx=5)
+
         tk.Label(input_frame, text="Wordle Answer:").pack(side=tk.LEFT, padx=(0,5))
-        self.answer_var = tk.StringVar(value=word.upper() if word else "")
+        self.answer_var = tk.StringVar(value="")
         self.answer_entry = tk.Entry(input_frame, textvariable=self.answer_var, width=7, justify="center", font=font.Font(size=14))
         self.answer_entry.pack(side=tk.LEFT)
 
@@ -42,7 +54,9 @@ class WordleGUI(tk.Tk):
         for r in range(6):
             row_buttons = []
             for c in range(5):
-                btn = tk.Button(grid_frame, width=4, height=2, bg=self.COLORS[0], relief="raised", command=lambda row=r, col=c: self.toggle_square(row,col))
+                btn = tk.Button(grid_frame, width=4, height=2, bg=self.COLORS[0], relief="raised")
+                btn.bind("<Button-1>", lambda event, row=r, col=c: self.toggle_square(row, col))
+                btn.bind("<Button-3>", lambda event, row=r, col=c: self.reset_square(row, col))
                 btn.grid(row=r, column=c, padx=2, pady=2)
                 row_buttons.append(btn)
             self.grid_buttons.append(row_buttons)
@@ -68,6 +82,11 @@ class WordleGUI(tk.Tk):
         new_state = (current_state + 1) % 3
         self.grid_states[row][col] = new_state
         self.grid_buttons[row][col].config(bg=self.COLORS[new_state])
+
+    
+    def reset_square(self, row:int, col:int):
+        self.grid_states[row][col] = 0
+        self.grid_buttons[row][col].config(bg=self.COLORS[0])
 
     
     def reset_interface(self):
@@ -118,3 +137,15 @@ class WordleGUI(tk.Tk):
             self.result_text.insert(tk.END, f"Guess {i+1}: {guess}\n")
         
         self.result_text.config(state="disabled")
+        # Shuffle internal word list between guess generations for variety
+        random.shuffle(self.word_list)
+    
+
+    def fetch_word_for_date(self):
+        date_str = self.date_picker.get()
+        answer = wordle.get_wordle_answer(date_str)
+        if answer:
+            self.answer_var.set(answer.upper())
+        else:
+            self.answer_var.set("")
+            messagebox.showwarning("Failure", f"Could not retrieve Wordle answer for date {date_str}.")
