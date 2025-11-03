@@ -1,7 +1,16 @@
+import sys
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtGui import QFont
+
 import gui
 
 if __name__ == "__main__":
-    # todays_word = wordle.get_todays_answer()
-    app = gui.WordleGUI()
+    app = QApplication(sys.argv)
 
-    app.mainloop()
+    font = QFont("Segoe UI", 10)
+    app.setFont(font)
+
+    window = gui.WordleGUI()
+
+    window.show()
+    sys.exit(app.exec())

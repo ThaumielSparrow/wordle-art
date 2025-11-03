@@ -1,3 +1,2 @@
-tkinter
-tkcalendar
+PyQt6
 requests
