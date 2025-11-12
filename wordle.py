@@ -3,19 +3,21 @@ import datetime
 import json
 import os
 import random
+from collections import OrderedDict
 from typing import List, Dict
 
 CACHE_FILE = "answer_cache.json"
+CACHE_MAX_SIZE = 100
 WORD_LIST = "guesses.txt"
 
-def read_cache() -> Dict[str, str]:
+def read_cache() -> OrderedDict[str, str]:
     if not os.path.exists(CACHE_FILE):
-        return {}
+        return OrderedDict()
     try:
         with open(CACHE_FILE, "r") as f:
-            return json.load(f)
+            return OrderedDict(json.load(f))
     except (json.JSONDecodeError, IOError):
-        return {}
+        return OrderedDict()
     
 def write_cache(data):
     try:
@@ -45,6 +47,8 @@ def get_wordle_answer(date_str:str) -> str:
     cache = read_cache()
 
     if date_str in cache:
+        cache.move_to_end(date_str)
+        write_cache(cache)
         return cache[date_str]
     
     try:
@@ -57,6 +61,10 @@ def get_wordle_answer(date_str:str) -> str:
 
         if solution:
             cache[date_str] = solution
+
+            if len(cache) > CACHE_MAX_SIZE:
+                cache.popitem(last=False)
+            
             write_cache(cache)
             return solution
         else:
